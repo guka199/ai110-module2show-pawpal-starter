@@ -6,11 +6,25 @@
 
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
+Add/Edit a Pet Task — Create a care task (walk, feeding, meds, grooming, enrichment) with a duration and priority level.
+
+Generate Daily Schedule — Auto-plan the day based on available time, task priorities, and constraints.
+
+Set Owner & Pet Profile — Enter basic info (owner name, pet name, breed, available time per day) that constraints the planner.
+
+
+View Schedule & Reasoning — See the generated daily plan with an explanation of why tasks were ordered/prioritized that way.
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+Yes, several changes were made after reviewing the initial skeleton:
+
+- **`Task` gained a `pet` reference** — the initial design had tasks as global, but tasks need to belong to a specific pet (e.g. Mochi's walk vs. Bella's feeding).
+- **`Scheduler.tasks` changed from a flat list to `Dict[Pet, List[Task]]`** — to support multiple pets per owner without mixing their tasks together.
+- **`DailyPlan` now holds an `owner` reference** — so the plan retains context of who it was generated for, enabling meaningful display and reasoning output.
+- **`Owner` gained `spend_time()` and `reset_time()`** — the original `available_minutes` was a static field with no way to track time consumed during scheduling.
+- **`priority` and `category` became enums** — raw strings like `"high"` are fragile to sort and compare; enums enforce valid values and make priority ordering reliable.
+- **`explain_plan()` was removed from `Scheduler`** — reasoning is now built inside `DailyPlan` via `add_entry(task, reason)`, avoiding duplicated responsibility across two classes.
 
 ---
 
