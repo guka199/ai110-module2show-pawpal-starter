@@ -1,0 +1,51 @@
+classDiagram
+    class Owner {
+        +String name
+        +int available_minutes
+        +String preferences
+        +List pets
+        +set_profile(name, available_minutes)
+        +get_available_time() int
+        +add_pet(pet)
+    }
+
+    class Pet {
+        +String name
+        +String species
+        +Owner owner
+        +get_info() String
+    }
+
+    class Task {
+        +String title
+        +int duration_minutes
+        +String priority
+        +String category
+        +to_dict() dict
+        +is_high_priority() bool
+    }
+
+    class Scheduler {
+        +List tasks
+        +Owner owner
+        +DailyPlan scheduled_plan
+        +add_task(task)
+        +remove_task(title)
+        +generate_plan() DailyPlan
+        +explain_plan() String
+    }
+
+    class DailyPlan {
+        +List entries
+        +int total_duration
+        +String reasoning
+        +display() String
+        +get_reasoning() String
+    }
+
+    Owner "1" --> "*" Pet : owns
+    Pet "*" --> "1" Owner : belongs to
+    Scheduler "1" --> "1" Owner : uses
+    Scheduler "1" --> "*" Task : manages
+    Scheduler "1" --> "1" DailyPlan : produces
+    DailyPlan "1" --> "*" Task : contains
