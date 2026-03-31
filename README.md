@@ -31,6 +31,28 @@ The scheduler includes four algorithmic improvements beyond basic task generatio
 - **Recurring tasks** — `Task` supports a `frequency` field (`"none"`, `"daily"`, `"weekly"`). Calling `mark_complete()` on a recurring task marks it done and returns a fresh copy ready for the next occurrence.
 - **Conflict detection** — `Scheduler.detect_conflicts()` scans all timed tasks and returns a warning string for every pair that shares the same `start_time` slot. Returns an empty list when no conflicts exist.
 
+## Testing PawPal+
+
+Run the full test suite from the project root:
+
+```bash
+python -m pytest
+```
+
+The suite covers 20 test cases across six areas:
+
+| Area | What's tested |
+|---|---|
+| Task completion | `mark_complete()` sets status; non-recurring returns `None` |
+| Recurring tasks | Daily/weekly tasks return a fresh incomplete copy |
+| Pet task management | `add_task()` increases count; new pet starts empty |
+| Sorting | Chronological order, untimed tasks excluded, per-pet filter |
+| Filtering | By pet name, completion status, and no criteria |
+| Conflict detection | Same-time warning, different times, no timed tasks |
+| Scheduler logic | Time budget respected, priority ordering, empty plan, validation errors |
+
+**Confidence level: ★★★★☆** — all happy paths and key edge cases are covered. Overlap-aware conflict detection (tasks that span into each other's windows) is not yet tested.
+
 ## Getting started
 
 ### Setup
