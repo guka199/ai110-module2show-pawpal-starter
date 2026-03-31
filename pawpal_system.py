@@ -50,6 +50,8 @@ class Task:
     category: Category
     pet: Optional[Pet] = None
     completed: bool = False
+    start_time: str = ""
+    frequency: str = "none"
 
     def to_dict(self) -> dict:
         """Serialize the task to a plain dictionary with enum values as strings."""
@@ -60,15 +62,29 @@ class Task:
             "category": self.category.value,
             "pet": self.pet.name if self.pet else None,
             "completed": self.completed,
+            "start_time": self.start_time,
+            "frequency": self.frequency,
         }
 
     def is_high_priority(self) -> bool:
         """Return True if the task's priority is HIGH."""
         return self.priority == Priority.HIGH
 
-    def mark_complete(self) -> None:
-        """Mark the task as completed by setting completed to True."""
+    def mark_complete(self) -> Optional[Task]:
+        """Mark the task complete and return a reset copy for recurring tasks, or None if non-recurring."""
         self.completed = True
+        if self.frequency in ("daily", "weekly"):
+            return Task(
+                title=self.title,
+                duration_minutes=self.duration_minutes,
+                priority=self.priority,
+                category=self.category,
+                pet=self.pet,
+                completed=False,
+                start_time=self.start_time,
+                frequency=self.frequency,
+            )
+        return None
 
 
 class Owner:
@@ -153,6 +169,63 @@ class Scheduler:
 
         self.scheduled_plan = plan
         return plan
+
+    def sort_by_time(self, pet: Optional[Pet] = None) -> List[Task]:
+        """Return tasks with a start_time sorted chronologically, optionally filtered to one pet."""
+        if pet is not None:
+            task_lists = [self.tasks.get(pet, [])]
+        else:
+            task_lists = list(self.tasks.values())
+
+        all_tasks: List[Task] = []
+        for task_list in task_lists:
+            all_tasks.extend(task_list)
+
+        timed_tasks = [t for t in all_tasks if t.start_time != ""]
+        return sorted(timed_tasks, key=lambda t: t.start_time)
+
+    def filter_tasks(self, pet_name: Optional[str] = None, completed: Optional[bool] = None) -> List[Task]:
+        """Return tasks filtered by pet name and/or completion status."""
+        all_tasks: List[Task] = []
+        for task_list in self.tasks.values():
+            all_tasks.extend(task_list)
+
+        if pet_name is not None:
+            all_tasks = [t for t in all_tasks if t.pet is not None and t.pet.name == pet_name]
+
+        if completed is not None:
+            all_tasks = [t for t in all_tasks if t.completed == completed]
+
+        return all_tasks
+
+    def detect_conflicts(self) -> List[str]:
+        """Return warning strings for every pair of tasks sharing the same start_time slot."""
+        all_tasks: List[Task] = []
+        for task_list in self.tasks.values():
+            all_tasks.extend(task_list)
+
+        timed_tasks = [t for t in all_tasks if t.start_time != ""]
+
+        # Group tasks by start_time
+        time_groups: Dict[str, List[Task]] = {}
+        for task in timed_tasks:
+            time_groups.setdefault(task.start_time, []).append(task)
+
+        warnings: List[str] = []
+        for time, group in time_groups.items():
+            if len(group) < 2:
+                continue
+            # Generate a warning for every pair in the slot
+            for i in range(len(group)):
+                for j in range(i + 1, len(group)):
+                    t1, t2 = group[i], group[j]
+                    pet1 = t1.pet.name if t1.pet else "Unknown"
+                    pet2 = t2.pet.name if t2.pet else "Unknown"
+                    warnings.append(
+                        f"Conflict at {time}: {t1.title} ({pet1}) and {t2.title} ({pet2})"
+                    )
+
+        return warnings
 
 
 class DailyPlan:

@@ -37,8 +37,7 @@ Yes, several changes were made after reviewing the initial skeleton:
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+The conflict detector checks for exact `start_time` string matches rather than overlapping time windows. Two tasks at `"08:00"` and `"08:15"` will not be flagged even if the first task takes 30 minutes and clearly overlaps the second. This means some real conflicts go undetected. The tradeoff is reasonable for this stage because it keeps the logic simple and avoids needing end-time calculations — it still catches the most obvious double-bookings (same time slot) without adding significant complexity to the scheduler.
 
 ---
 

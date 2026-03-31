@@ -22,6 +22,15 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Smarter Scheduling
+
+The scheduler includes four algorithmic improvements beyond basic task generation:
+
+- **Sorting by time** — `Scheduler.sort_by_time(pet?)` returns tasks with a `start_time` ordered chronologically. Tasks added in any order will always display in the correct sequence.
+- **Filtering** — `Scheduler.filter_tasks(pet_name?, completed?)` narrows the task list by pet name, completion status, or both. Useful for showing only a single pet's incomplete tasks.
+- **Recurring tasks** — `Task` supports a `frequency` field (`"none"`, `"daily"`, `"weekly"`). Calling `mark_complete()` on a recurring task marks it done and returns a fresh copy ready for the next occurrence.
+- **Conflict detection** — `Scheduler.detect_conflicts()` scans all timed tasks and returns a warning string for every pair that shares the same `start_time` slot. Returns an empty list when no conflicts exist.
+
 ## Getting started
 
 ### Setup
